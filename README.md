@@ -31,7 +31,9 @@
 
 ## 📸 צילומי מסך
 
-*(כאן תוכל להוסיף את התמונות היפות שצילמת של הכפתור והחלונית)*
+
+<img width="1470" height="714" alt="image" src="https://github.com/user-attachments/assets/07dd6c99-9b47-4116-9716-a9a6082633cf" />
+
 
 ---
 
