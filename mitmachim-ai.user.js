@@ -1,17 +1,44 @@
 // ==UserScript==
 // @name         Mitmachim Top Topic Summarizer - Ultimate Edition
 // @namespace    http://mitmachim.top/*
-// @version      5.8
-// @description  AI topic summarizer with native hover effect, smart caching, strict positioning, Bullet-point formatting & Security Fixes
+// @version      6.0
+// @description  AI topic summarizer: Flash-Lite, Native Hover, Smart Caching, Copy Button & Custom Prompt Editor
 // @match        https://mitmachim.top/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_setClipboard
 // @connect      generativelanguage.googleapis.com
 // ==/UserScript==
 
 (function() {
     'use strict';
+
+    // ==========================================
+    // הגדרת הנחיית ברירת המחדל (Default Prompt)
+    // ==========================================
+    const defaultPromptText = `סכם את הדיון בעברית תקנית, בצורה תמציתית, ברורה ועובדתית.
+
+פורמט הפלט:
+- אל תפתח במשפטים כמו "להלן סיכום" או "סיכום הדיון" - גש ישר לתוכן.
+- מותר ומומלץ להשתמש ב-Markdown בסיסי בלבד לפי הצורך:
+  - **טקסט מודגש** להדגשת מונחים מרכזיים או החלטות.
+  - *טקסט נטוי* לשמות, ציטוטים קצרים, או דגשים משניים.
+  - רשימה לא ממוספרת עם מקף ורווח (- פריט) כשיש 3 פריטים או יותר באותה קטגוריה.
+  - רשימה ממוספרת (1. פריט) כשיש סדר או שלבים.
+  - כותרת משנה בסולמית כפולה (## כותרת) רק בדיון ארוך עם כמה נושאים נפרדים.
+  - \`קוד\` בגרשיים אחוריים לפקודות, שמות קבצים, או מונחים טכניים.
+  - קישורים בפורמט [תיאור](כתובת) רק אם הופיעו במקור.
+- אל תשתמש בטבלאות, ב-blockquote (>), בקווי הפרדה (---), או ברשימות מקוננות.
+- הפרד בין פסקאות בשורה ריקה.
+
+תוכן הסיכום:
+- התחל מהנושא המרכזי של הדיון.
+- המשך לנקודות העיקריות, נקודות מחלוקת או הסכמה, ופרטים מהותיים.
+- סיים במסקנה, החלטה, או בסטטוס הנוכחי - אם קיים.
+- ציין שם משתמש רק אם זהותו מהותית להבנת הדיון. אחרת השתמש ב"משתמש" או "משתתף".
+- אל תמציא מידע שאינו מופיע בטקסט. אם משהו לא ברור, דלג עליו.
+- אורך: 3 עד 6 משפטים, או 2 עד 4 פריטים ברשימה אם הדיון מנייתי באופיו.`;
 
     // עיצוב החלונית
     const customStyles = `
@@ -36,7 +63,7 @@
         return key;
     }
 
-    // המרת תווים מיוחדים כדי למנוע חדירת קוד זדוני (XSS Protection)
+    // המרת תווים מיוחדים למניעת חדירת קוד זדוני (XSS Protection)
     function escapeHTML(str) {
         return str.replace(/[&<>'"]/g, function(tag) {
             const charsToReplace = {
@@ -50,36 +77,93 @@
         });
     }
 
-    // המרת מארקדאון ל-HTML תקני (כולל רשימות ונקודות חכמות)
+    // המרת מארקדאון מורחב ל-HTML תקני (תמיכה בהנחיה החדשה)
     function formatSummaryText(text) {
-        // קודם כל: ניקוי סכנות (Escaping)
         let html = escapeHTML(text);
 
-        // הדגשות (Bold)
-        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // כותרות משנה
+        html = html.replace(/^### (.*?)$/gm, '<h4 style="margin-top:15px; margin-bottom:5px; color:#202124;"><strong>$1</strong></h4>');
+        html = html.replace(/^## (.*?)$/gm, '<h3 style="margin-top:15px; margin-bottom:5px; color:#202124;"><strong>$1</strong></h3>');
+        html = html.replace(/^# (.*?)$/gm, '<h2 style="margin-top:15px; margin-bottom:5px; color:#202124;"><strong>$1</strong></h2>');
 
-        // כותרות
-        html = html.replace(/### (.*?)(?=\n|$)/g, '<h4 style="margin-top:15px;"><strong>$1</strong></h4>');
-        html = html.replace(/## (.*?)(?=\n|$)/g, '<h3 style="margin-top:15px;"><strong>$1</strong></h3>');
-        html = html.replace(/# (.*?)(?=\n|$)/g, '<h2 style="margin-top:15px;"><strong>$1</strong></h2>');
-
-        // זיהוי שורות רשימה (מתחילות בכוכבית או מקף רווח) והמרתן ל-<li>
+        // רשימות לא ממוספרות (כוכבית או מקף)
         html = html.replace(/^[\*\-]\s+(.*)$/gm, '<li>$1</li>');
+        html = html.replace(/(<li>.*<\/li>(?:\n<li>.*<\/li>)*)/g, '<ul style="padding-right: 25px; margin-bottom: 15px; margin-top: 5px;">$1</ul>');
 
-        // עטיפת קבוצות של <li> בתוך <ul> כדי ליצור את הנקודות העגולות בעיצוב
-        html = html.replace(/(<li>.*<\/li>(?:\n<li>.*<\/li>)*)/g, '<ul style="padding-right: 25px; margin-bottom: 15px; margin-top: 10px;">$1</ul>');
+        // רשימות ממוספרות (מספר ונקודה)
+        html = html.replace(/^\d+\.\s+(.*)$/gm, '<li class="ol-item">$1</li>');
+        html = html.replace(/(<li class="ol-item">.*<\/li>(?:\n<li class="ol-item">.*<\/li>)*)/g, '<ol style="padding-right: 25px; margin-bottom: 15px; margin-top: 5px;">$1</ol>');
+        html = html.replace(/class="ol-item"/g, '');
 
-        // הפיכת שאר ירידות השורה ל-<br>
+        // עיצובי טקסט מובלעים (Bold, Italic)
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+
+        // קוד inline (Inline Code)
+        html = html.replace(/`(.*?)`/g, '<code style="background:#f1f3f4; padding:2px 5px; border-radius:4px; font-family:monospace; color:#d63384; font-size:90%;">$1</code>');
+
+        // קישורים
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="text-decoration:none; color:#0d6efd;">$1</a>');
+
+        // רווחים ושבירת שורות
+        html = html.replace(/\n\n/g, '<br><br>');
         html = html.replace(/\n/g, '<br>');
 
-        // ניקוי <br> מיותרים שנוצרו מסביב ובתוך הרשימות
+        // ניקוי <br> מיותרים
         html = html.replace(/<br><ul/g, '<ul').replace(/<\/ul><br>/g, '</ul>');
+        html = html.replace(/<br><ol/g, '<ol').replace(/<\/ol><br>/g, '</ol>');
         html = html.replace(/<\/li><br>/g, '</li>');
 
         return html;
     }
 
-    // פעולת הסיכום
+    // פתיחת חלונית לעריכת ההנחיה
+    function showPromptEditor(tid, cacheKey) {
+        const bootbox = window.bootbox || unsafeWindow.bootbox;
+        const currentPrompt = GM_getValue('custom_ai_prompt_v1') || defaultPromptText;
+
+        bootbox.dialog({
+            title: 'הגדרות מתקדמות: התאמת הנחיה (Prompt)',
+            message: `
+                <div style="direction: rtl; text-align: right;">
+                    <p style="margin-bottom: 15px; color: #555; font-size: 14px;">
+                        כאן תוכל לערוך את ההוראות שנשלחות לבינה המלאכותית לפני הסיכום.<br>
+                        <strong>טיפ:</strong> אם תמחק את כל הטקסט ותשמור, המערכת תחזור אוטומטית להנחיית ברירת המחדל.
+                    </p>
+                    <textarea id="custom-prompt-textarea" class="form-control" rows="15" style="width: 100%; resize: vertical; font-family: monospace; direction: rtl; font-size: 13px; line-height: 1.5;">${escapeHTML(currentPrompt)}</textarea>
+                </div>
+            `,
+            size: 'large',
+            buttons: {
+                save: {
+                    label: '<i class="fa fa-save"></i> שמור וסכם מחדש',
+                    className: 'btn-primary',
+                    callback: function() {
+                        const newPrompt = document.getElementById('custom-prompt-textarea').value.trim();
+                        if (newPrompt) {
+                            GM_setValue('custom_ai_prompt_v1', newPrompt);
+                        } else {
+                            // אם המשתמש רוקן את התיבה, חוזרים לברירת המחדל
+                            GM_setValue('custom_ai_prompt_v1', '');
+                        }
+                        // מחיקת הקאש הקיים כדי להכריח סיכום לפי ההנחיה החדשה
+                        localStorage.removeItem(cacheKey);
+                        startSummary();
+                    }
+                },
+                cancel: {
+                    label: 'ביטול',
+                    className: 'btn-default',
+                    callback: function() {
+                        // חזרה לחלונית הסיכום הרגילה ללא שינוי
+                        startSummary();
+                    }
+                }
+            }
+        });
+    }
+
+    // פעולת הסיכום המרכזית
     async function startSummary() {
         const match = window.location.pathname.match(/\/topic\/(\d+)/);
         const tid = match ? match[1] : null;
@@ -97,20 +181,36 @@
             return;
         }
 
-        const cacheKey = `ai_summary_tid_${tid}_v2`;
+        const cacheKey = `ai_summary_tid_${tid}_v3`;
         const cachedSummary = localStorage.getItem(cacheKey);
 
+        // אם יש קאש - מציגים ישירות
         if (cachedSummary) {
-            bootbox.dialog({
+            const cachedDialog = bootbox.dialog({
                 title: 'סיכום הנושא <span class="badge bg-secondary" style="font-size: 12px; margin-right: 5px;">מתוך הזיכרון</span>',
                 message: `<div style="font-size: 15px; line-height: 1.6;">${formatSummaryText(cachedSummary)}</div>`,
                 closeButton: true,
                 size: 'large',
                 className: 'ai-summary-dialog',
                 buttons: {
-                    ok: {
-                        label: 'OK',
-                        className: 'btn-primary'
+                    copy: {
+                        label: '<i class="fa fa-clone"></i> העתק סיכום',
+                        className: 'btn-default nbe-copy-btn',
+                        callback: function() {
+                            GM_setClipboard(cachedSummary);
+                            const btn = cachedDialog.find('.nbe-copy-btn');
+                            btn.html('<i class="fa fa-check"></i> הועתק').removeClass('btn-default').addClass('btn-success text-white');
+                            setTimeout(() => btn.html('<i class="fa fa-clone"></i> העתק סיכום').removeClass('btn-success text-white').addClass('btn-default'), 2000);
+                            return false; 
+                        }
+                    },
+                    editPrompt: {
+                        label: '<i class="fa fa-sliders"></i> התאמת הנחיה',
+                        className: 'btn-default',
+                        callback: function() {
+                            showPromptEditor(tid, cacheKey);
+                            return true; // סוגר את החלונית הנוכחית
+                        }
                     },
                     refresh: {
                         label: '<i class="fa fa-refresh"></i> סכם מחדש',
@@ -119,6 +219,10 @@
                             localStorage.removeItem(cacheKey);
                             startSummary();
                         }
+                    },
+                    ok: {
+                        label: 'סגור',
+                        className: 'btn-primary'
                     }
                 }
             });
@@ -128,6 +232,7 @@
         const apiKey = getApiKey();
         if (!apiKey) return;
 
+        // חלונית טעינה בעת יצירת סיכום חדש
         const dialog = bootbox.dialog({
             title: 'סיכום הנושא',
             message: '<div class="text-center" style="padding: 20px;"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i><div style="margin-top: 10px; color: #666;">אוסף נתונים ומסכם...</div></div>',
@@ -135,7 +240,29 @@
             size: 'large',
             className: 'ai-summary-dialog',
             buttons: {
-                ok: { label: 'OK', className: 'btn-primary disabled' }
+                copy: { 
+                    label: '<i class="fa fa-clone"></i> העתק סיכום', 
+                    className: 'btn-default nbe-copy-btn disabled',
+                    callback: function() {
+                        const rawText = dialog.data('rawSummary');
+                        if (rawText) {
+                            GM_setClipboard(rawText);
+                            const btn = dialog.find('.nbe-copy-btn');
+                            btn.html('<i class="fa fa-check"></i> הועתק').removeClass('btn-default').addClass('btn-success text-white');
+                            setTimeout(() => btn.html('<i class="fa fa-clone"></i> העתק סיכום').removeClass('btn-success text-white').addClass('btn-default'), 2000);
+                        }
+                        return false;
+                    }
+                },
+                editPrompt: {
+                    label: '<i class="fa fa-sliders"></i> התאמת הנחיה',
+                    className: 'btn-default nbe-edit-btn disabled',
+                    callback: function() {
+                        showPromptEditor(tid, cacheKey);
+                        return true;
+                    }
+                },
+                ok: { label: 'סגור', className: 'btn-primary disabled nbe-ok-btn' }
             }
         });
 
@@ -168,35 +295,28 @@
 
         if (!threadText) {
             dialog.find('.bootbox-body').html('<div class="alert alert-danger">שגיאה: לא הצלחתי לקרוא את תוכן הדיון.</div>');
-            dialog.find('.btn-primary').removeClass('disabled');
+            dialog.find('.nbe-ok-btn, .nbe-edit-btn').removeClass('disabled');
             return;
         }
 
-        // חיתוך טקסט כדי לא לחרוג ממגבלת הטוקנים של מודל ה-API במקרה של דיונים ענקיים
         const MAX_CHARS = 80000;
         if (threadText.length > MAX_CHARS) {
             threadText = threadText.substring(0, MAX_CHARS) + "\n...[הטקסט נחתך עקב מגבלת אורך הדיון]...";
         }
 
-        const promptText = `אתה מומחה בסיכום מידע. קרא את הפוסטים הבאים מתוך דיון בפורום. עליך להחזיר סיכום מלא, ברור ומתומצת של כל הנושא.
-החזר את הסיכום *אך ורק* כרשימת נקודות קצרה וקולעת. עבור כל נקודה ברשימה, כתוב מילת נושא או משפט קצר ומודגש, לאחריו נקודתיים, ואז ההסבר.
-לדוגמה:
-* **נושא הדיון:** הסבר קצר על מה מדובר.
-* **נקודה מרכזית:** פירוט הנקודה שהועלתה.
-
-הנה הפוסטים לסיכום:
-\n\n${threadText}`;
+        // טעינת ההנחיה המותאמת אישית של המשתמש (אם קיימת), או שימוש בברירת המחדל
+        const customPrompt = GM_getValue('custom_ai_prompt_v1') || defaultPromptText;
+        const finalPrompt = `${customPrompt}\n\nהנה הפוסטים לסיכום:\n\n${threadText}`;
 
         GM_xmlhttpRequest({
             method: 'POST',
-            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+            url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${apiKey}`,
             headers: { 'Content-Type': 'application/json' },
-            data: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }),
+            data: JSON.stringify({ contents: [{ parts: [{ text: finalPrompt }] }] }),
             onload: function(response) {
                 try {
                     const res = JSON.parse(response.responseText);
                     if (res.error) {
-                        // שימוש ב-optional chaining למניעת קריסה אם message לא מוגדר
                         if (res.error.code === 400 && res.error?.message?.includes("API key not valid")) {
                             dialog.find('.bootbox-body').html('<div class="alert alert-danger">מפתח ה-API לא תקין. הוא אופס. רענן את העמוד ונסה שוב.</div>');
                             GM_setValue('gemini_api_key_v2', '');
@@ -205,20 +325,27 @@
                         }
                     } else if (res.candidates && res.candidates.length > 0) {
                         const summary = res.candidates[0].content.parts[0].text;
+                        
                         localStorage.setItem(cacheKey, summary);
+                        dialog.data('rawSummary', summary);
+
                         const formattedHTML = formatSummaryText(summary);
                         dialog.find('.bootbox-body').html(`<div style="font-size: 15px; line-height: 1.6;">${formattedHTML}</div>`);
+                        
+                        // הדלקת הכפתורים ברגע שהסיכום מוכן
+                        dialog.find('.nbe-copy-btn').removeClass('disabled');
                     } else {
                         dialog.find('.bootbox-body').html('<div class="alert alert-warning">התקבלה תשובה ריקה.</div>');
                     }
                 } catch (e) {
                     dialog.find('.bootbox-body').html('<div class="alert alert-danger">שגיאה בפענוח התשובה מ-Gemini.</div>');
                 }
-                dialog.find('.btn-primary').removeClass('disabled');
+                // הדלקת כפתורי הפעולות הרגילים בכל מצב של סיום
+                dialog.find('.nbe-ok-btn, .nbe-edit-btn').removeClass('disabled');
             },
             onerror: function() {
                 dialog.find('.bootbox-body').html('<div class="alert alert-danger">שגיאת תקשורת עם שרתי Google.</div>');
-                dialog.find('.btn-primary').removeClass('disabled');
+                dialog.find('.nbe-ok-btn, .nbe-edit-btn').removeClass('disabled');
             }
         });
     }
@@ -229,7 +356,6 @@
     }
 
     function injectInlineButton() {
-        // מניעת עומס על ה-DOM: אם הכפתור כבר קיים, אל תחפש מחדש ואל תייצר אותו שוב
         let btn = document.getElementById('native-ai-summary-btn');
         if (btn) return;
 
@@ -247,12 +373,8 @@
         btn = document.createElement('button');
         btn.id = 'native-ai-summary-btn';
 
-        // שימוש במחלקות המקוריות של הפורום לקבלת העיצוב המובנה (רקע אפור בריחוף)
         btn.className = 'btn btn-ghost btn-sm ff-secondary d-flex gap-2 align-items-center text-truncate';
-
-        // הסרנו את ה-background: transparent כדי לתת למחלקת btn-ghost לעבוד
         btn.style.cssText = 'order: 999; margin-right: 5px; cursor: pointer; display: inline-flex; border: none; outline: none;';
-
         btn.innerHTML = '<i class="fa fa-fw fa-magic text-primary"></i> <span class="fw-semibold text-truncate text-nowrap">סכם נושא</span>';
 
         btn.onclick = (e) => {
