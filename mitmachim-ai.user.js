@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Mitmachim Top Topic Summarizer - Ultimate Edition
 // @namespace    http://mitmachim.top/*
-// @version      5.6
-// @description  AI topic summarizer with native hover effect, smart caching, strict positioning & Bullet-point formatting
+// @version      5.8
+// @description  AI topic summarizer with native hover effect, smart caching, strict positioning, Bullet-point formatting & Security Fixes
 // @match        https://mitmachim.top/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
@@ -36,9 +36,24 @@
         return key;
     }
 
+    // המרת תווים מיוחדים כדי למנוע חדירת קוד זדוני (XSS Protection)
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, function(tag) {
+            const charsToReplace = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            };
+            return charsToReplace[tag] || tag;
+        });
+    }
+
     // המרת מארקדאון ל-HTML תקני (כולל רשימות ונקודות חכמות)
     function formatSummaryText(text) {
-        let html = text;
+        // קודם כל: ניקוי סכנות (Escaping)
+        let html = escapeHTML(text);
 
         // הדגשות (Bold)
         html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -157,6 +172,12 @@
             return;
         }
 
+        // חיתוך טקסט כדי לא לחרוג ממגבלת הטוקנים של מודל ה-API במקרה של דיונים ענקיים
+        const MAX_CHARS = 80000;
+        if (threadText.length > MAX_CHARS) {
+            threadText = threadText.substring(0, MAX_CHARS) + "\n...[הטקסט נחתך עקב מגבלת אורך הדיון]...";
+        }
+
         const promptText = `אתה מומחה בסיכום מידע. קרא את הפוסטים הבאים מתוך דיון בפורום. עליך להחזיר סיכום מלא, ברור ומתומצת של כל הנושא.
 החזר את הסיכום *אך ורק* כרשימת נקודות קצרה וקולעת. עבור כל נקודה ברשימה, כתוב מילת נושא או משפט קצר ומודגש, לאחריו נקודתיים, ואז ההסבר.
 לדוגמה:
@@ -175,7 +196,8 @@
                 try {
                     const res = JSON.parse(response.responseText);
                     if (res.error) {
-                        if (res.error.code === 400 && res.error.message.includes("API key not valid")) {
+                        // שימוש ב-optional chaining למניעת קריסה אם message לא מוגדר
+                        if (res.error.code === 400 && res.error?.message?.includes("API key not valid")) {
                             dialog.find('.bootbox-body').html('<div class="alert alert-danger">מפתח ה-API לא תקין. הוא אופס. רענן את העמוד ונסה שוב.</div>');
                             GM_setValue('gemini_api_key_v2', '');
                         } else {
@@ -207,6 +229,10 @@
     }
 
     function injectInlineButton() {
+        // מניעת עומס על ה-DOM: אם הכפתור כבר קיים, אל תחפש מחדש ואל תייצר אותו שוב
+        let btn = document.getElementById('native-ai-summary-btn');
+        if (btn) return;
+
         const anchorElement = document.querySelector('[component="topic/sort"]') ||
                               document.querySelector('[component="topic/watch"]');
 
@@ -218,32 +244,24 @@
                                 anchorElement.closest('.btn-group') ||
                                 anchorElement.parentNode;
 
-        let btn = document.getElementById('native-ai-summary-btn');
+        btn = document.createElement('button');
+        btn.id = 'native-ai-summary-btn';
 
-        if (!btn) {
-            btn = document.createElement('button');
-            btn.id = 'native-ai-summary-btn';
+        // שימוש במחלקות המקוריות של הפורום לקבלת העיצוב המובנה (רקע אפור בריחוף)
+        btn.className = 'btn btn-ghost btn-sm ff-secondary d-flex gap-2 align-items-center text-truncate';
 
-            // שימוש במחלקות המקוריות של הפורום לקבלת העיצוב המובנה (רקע אפור בריחוף)
-            btn.className = 'btn btn-ghost btn-sm ff-secondary d-flex gap-2 align-items-center text-truncate';
+        // הסרנו את ה-background: transparent כדי לתת למחלקת btn-ghost לעבוד
+        btn.style.cssText = 'order: 999; margin-right: 5px; cursor: pointer; display: inline-flex; border: none; outline: none;';
 
-            // הסרנו את ה-background: transparent כדי לתת למחלקת btn-ghost לעבוד!
-            btn.style.cssText = 'order: 999; margin-right: 5px; cursor: pointer; display: inline-flex; border: none; outline: none;';
+        btn.innerHTML = '<i class="fa fa-fw fa-magic text-primary"></i> <span class="fw-semibold text-truncate text-nowrap">סכם נושא</span>';
 
-            btn.innerHTML = '<i class="fa fa-fw fa-magic text-primary"></i> <span class="fw-semibold text-truncate text-nowrap">סכם נושא</span>';
+        btn.onclick = (e) => {
+            e.preventDefault();
+            startSummary();
+        };
 
-            btn.onclick = (e) => {
-                e.preventDefault();
-                startSummary();
-            };
-
-            targetContainer.appendChild(btn);
-            cleanupOldButtons();
-        } else {
-            if (targetContainer.lastElementChild !== btn) {
-                targetContainer.appendChild(btn);
-            }
-        }
+        targetContainer.appendChild(btn);
+        cleanupOldButtons();
     }
 
     let _observerBusy = false;
