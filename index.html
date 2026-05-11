@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מתמחים טופ AI - גרסה 7.0 Ultimate</title>
     
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="מתמחים AI">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
     <link rel="icon" type="image/png" href="favicon.png">
 
     <meta property="og:type" content="website">
@@ -208,27 +213,51 @@
 
         .hero p {
             font-size: 1.25rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-actions {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .btn-primary {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             background: var(--primary-gradient);
             color: white;
             text-decoration: none;
-            padding: 1rem 2.5rem;
+            padding: 1.1rem 2.5rem;
             border-radius: 100px;
             font-weight: 700;
-            font-size: 1.1rem;
-            transition: var(--transition);
+            font-size: 1.3rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 15px color-mix(in srgb, var(--primary-color) 40%, transparent);
+            box-shadow: 0 8px 25px color-mix(in srgb, var(--primary-color) 45%, transparent);
+            width: fit-content;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px color-mix(in srgb, var(--primary-color) 60%, transparent);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px color-mix(in srgb, var(--primary-color) 65%, transparent);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-icon {
+            font-size: 1.6rem;
+        }
+
+        .install-helper {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-right: 15px;
         }
 
         .hero-visual {
@@ -401,6 +430,12 @@
             .hero-content {
                 margin: 0 auto;
             }
+            .hero-actions {
+                align-items: center;
+            }
+            .install-helper {
+                margin-right: 0;
+            }
             .step-card {
                 flex-direction: column;
                 text-align: center;
@@ -426,7 +461,13 @@
                 <div class="badge">גרסה 7.0 Ultimate</div>
                 <h1>סיכום אשכולות בלחיצת כפתור. <span class="gradient-text">זה עד כדי כך פשוט.</span></h1>
                 <p>לקרוא אשכולות ארוכים זה נחלת העבר. סכמו דיונים שלמים והבינו את הנקודות המרכזיות בשניות, בלי לאבד הקשר ובלי לבזבז זמן.</p>
-                <a href="https://github.com/szs-770/Topic-summary-mitmachim-top/raw/refs/heads/main/mitmachim-ai.user.js" class="btn-primary">התקן עכשיו בחינם</a>
+                
+                <div class="hero-actions">
+                    <a href="https://github.com/szs-770/Topic-summary-mitmachim-top/raw/refs/heads/main/mitmachim-ai.user.js" class="btn-primary">
+                        <i class="ph ph-cloud-arrow-down btn-icon"></i> התקן את הסקריפט
+                    </a>
+                    <div class="install-helper">דורש תוסף Tampermonkey מותקן בדפדפן</div>
+                </div>
             </div>
             <div class="hero-visual fade-in-up" style="transition-delay: 0.2s;">
                 <img src="demo.gif" alt="הדגמת פעולת הסקריפט מתמחים טופ AI">
