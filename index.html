@@ -1,288 +1,592 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מתמחים טופ AI - סקריפט סיכום חכם</title>
+    <title>מתמחים טופ AI - גרסה 7.0 Ultimate</title>
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="מתמחים טופ AI - גרסה 7.0 Ultimate">
+    <meta property="og:description" content="קורא ומסכם אשכולות ארוכים בלחיצת כפתור בפורום מתמחים טופ. שדרגו את הקריאה שלכם בעזרת בינה מלאכותית.">
+    <meta property="og:image" content="demo.gif">
+    <meta property="og:locale" content="he_IL">
+
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            --glass-border: 1px solid rgba(0, 0, 0, 0.05);
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-            --feature-bg: rgba(0, 0, 0, 0.02);
-            --feature-bg-hover: rgba(0, 0, 0, 0.04);
-            --badge-bg: rgba(37, 99, 235, 0.1);
-            --theme-btn-bg: #ffffff;
-            --theme-btn-color: #0f172a;
-            --bg-pattern: 
-                radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.05), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.05), transparent 25%);
+            /* Light Theme Variables */
+            --bg-color-light: #f8fafc;
+            --text-primary-light: #0f172a;
+            --text-secondary-light: #475569;
+            --card-bg-light: #ffffff;
+            --border-color-light: #e2e8f0;
+            --primary-gradient-light: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            
+            /* Dark Theme Variables */
+            --bg-color-dark: #0b0f19;
+            --text-primary-dark: #f1f5f9;
+            --text-secondary-dark: #94a3b8;
+            --card-bg-dark: #111827;
+            --border-color-dark: #1e293b;
+            --primary-gradient-dark: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+
+            /* Shared Variables */
+            --primary-color: #6366f1;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+        }
+
+        [data-theme="light"] {
+            --bg-color: var(--bg-color-light);
+            --text-primary: var(--text-primary-light);
+            --text-secondary: var(--text-secondary-light);
+            --card-bg: var(--card-bg-light);
+            --border-color: var(--border-color-light);
+            --primary-gradient: var(--primary-gradient-light);
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+            --card-shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.12);
         }
 
         [data-theme="dark"] {
-            --bg-color: #0a0f1a;
-            --card-bg: rgba(19, 27, 47, 0.7);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --glass-border: 1px solid rgba(255, 255, 255, 0.05);
-            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            --feature-bg: rgba(255, 255, 255, 0.02);
-            --feature-bg-hover: rgba(255, 255, 255, 0.05);
-            --badge-bg: rgba(59, 130, 246, 0.2);
-            --theme-btn-bg: #1e293b;
-            --theme-btn-color: #f8fafc;
-            --bg-pattern: 
-                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.12), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.12), transparent 25%);
+            --bg-color: var(--bg-color-dark);
+            --text-primary: var(--text-primary-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --card-bg: var(--card-bg-dark);
+            --border-color: var(--border-color-dark);
+            --primary-gradient: var(--primary-gradient-dark);
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+            --card-shadow-hover: 0 20px 40px -10px rgba(0,0,0,0.7);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Assistant', sans-serif;
+            font-family: 'Heebo', sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow-x: hidden;
-            background-image: var(--bg-pattern);
-            background-attachment: fixed;
+            color: var(--text-primary);
             line-height: 1.6;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            overflow-x: hidden;
+        }
+
+        /* Layout & Spacing */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: 8rem 0;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            font-weight: 800;
+        }
+
+        h3 {
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        a.text-link {
+            color: var(--primary-color);
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        a.text-link:hover {
+            text-decoration: underline;
+            color: color-mix(in srgb, var(--primary-color) 80%, white);
+        }
+
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        /* Navbar */
+        nav {
+            padding: 1.5rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            background: color-mix(in srgb, var(--bg-color) 80%, transparent);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 900;
+            font-size: 1.3rem;
+            letter-spacing: -0.02em;
         }
 
         .theme-toggle {
-            position: fixed; top: 20px; left: 20px; z-index: 1000;
-            background: var(--theme-btn-bg); color: var(--theme-btn-color);
-            border: var(--glass-border); width: 50px; height: 50px; border-radius: 50%;
-            cursor: pointer; box-shadow: var(--card-shadow);
-            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
         }
 
-        .container { max-width: 950px; margin: 0 auto; padding: 60px 20px; }
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
 
-        .hero { text-align: center; padding: 40px 20px; margin-bottom: 20px; }
-        
-        .version-badge {
-            display: inline-block; background: var(--badge-bg); color: #3b82f6;
-            padding: 6px 18px; border-radius: 50px; font-weight: 700; font-size: 1rem;
-            margin-bottom: 20px; border: var(--glass-border);
+        /* Hero Section */
+        .hero {
+            padding-top: 12rem;
+            padding-bottom: 6rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+            color: var(--primary-color);
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
         }
 
         .hero h1 {
-            font-size: 3.8rem; font-weight: 800; margin-bottom: 20px;
-            background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
         }
 
-        .hero p { font-size: 1.3rem; color: var(--text-muted); max-width: 650px; margin: 0 auto 35px auto; }
-
-        .btn-glow {
-            display: inline-flex; align-items: center; gap: 12px;
-            background: var(--primary-gradient); color: white;
-            padding: 16px 40px; font-size: 1.3rem; font-weight: 700;
-            text-decoration: none; border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
         }
 
-        .btn-glow:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.4); color: white; }
-
-        .demo-container {
-            width: 100%; max-width: 800px; margin: 0 auto 50px auto;
-            border-radius: 20px; overflow: hidden; border: var(--glass-border);
-            box-shadow: var(--card-shadow);
-        }
-        .demo-container img { width: 100%; display: block; }
-
-        .glass-card {
-            background: var(--card-bg); backdrop-filter: blur(16px);
-            border: var(--glass-border); border-radius: 24px;
-            padding: 45px; margin-bottom: 40px; box-shadow: var(--card-shadow);
-        }
-
-        .card-title { font-size: 2rem; font-weight: 800; margin-bottom: 35px; display: flex; align-items: center; gap: 15px; }
-        .card-title i { color: #3b82f6; font-size: 1.8rem; }
-
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
-        .feature-item { background: var(--feature-bg); padding: 30px 25px; border-radius: 16px; border: var(--glass-border); }
-        .feature-item:hover { background: var(--feature-bg-hover); transform: translateY(-2px); }
-        .feature-icon { font-size: 2.2rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 18px; }
-        .feature-item h3 { font-size: 1.4rem; margin-bottom: 12px; font-weight: 700; color: var(--text-main); }
-        .feature-item p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.5; }
-
-        .styled-list { list-style: none; }
-        .styled-list li { position: relative; padding-right: 30px; margin-bottom: 15px; font-size: 1.1rem; color: var(--text-main); }
-        .styled-list li::before {
-            content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
-            color: #3b82f6; position: absolute; right: 0; top: 2px;
+        .btn-primary {
+            display: inline-block;
+            background: var(--primary-gradient);
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2.5rem;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px color-mix(in srgb, var(--primary-color) 40%, transparent);
         }
 
-        .step-item { display: flex; gap: 20px; margin-bottom: 35px; }
-        .step-item:last-child { margin-bottom: 0; }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px color-mix(in srgb, var(--primary-color) 60%, transparent);
+        }
+
+        .hero-visual {
+            position: relative;
+            width: 100%;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-visual img {
+            width: 100%;
+            height: auto;
+            display: block;
+            position: relative;
+            z-index: 0;
+        }
+
+        .hero-visual::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, color-mix(in srgb, var(--primary-color) 15%, transparent));
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+            border-color: color-mix(in srgb, var(--primary-color) 30%, transparent);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+        }
+
+        /* What's New Section */
+        .whats-new {
+            background: color-mix(in srgb, var(--card-bg) 50%, transparent);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .whats-new-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .whats-new-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .whats-new-icon {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        /* Installation Section */
+        .install-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
         .step-number {
-            flex-shrink: 0; width: 45px; height: 45px; background: var(--primary-gradient);
-            color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; font-weight: 800; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 800;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
-        .step-content h4 { font-size: 1.3rem; margin-bottom: 8px; color: var(--text-main); font-weight: 700; }
-        .step-content p { color: var(--text-muted); font-size: 1.1rem; }
-        .step-content a { color: #3b82f6; text-decoration: none; font-weight: 600; }
-        .step-content a:hover { text-decoration: underline; }
 
-        footer { text-align: center; padding: 40px 20px; color: var(--text-muted); border-top: var(--glass-border); margin-top: 60px; font-size: 1rem; }
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 4rem 0;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+        }
 
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.8rem; }
-            .hero p { font-size: 1.1rem; }
-            .glass-card { padding: 30px 20px; }
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .footer-tech {
+            font-family: monospace;
+            background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--primary-color);
+        }
+
+        /* Animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding-top: 8rem;
+            }
+            .hero-content {
+                margin: 0 auto;
+            }
+            .step-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
         }
     </style>
-    
-    <link rel="icon" type="image/png" href="favicon.png">
 </head>
-<body data-theme="light">
+<body>
 
-    <button class="theme-toggle" id="themeToggle" title="החלף מצב כהה/בהיר">
-        <i class="fa-solid fa-moon"></i>
-    </button>
-
-    <div class="container">
-        
-        <header class="hero" data-aos="fade-down">
-            <div class="version-badge">גרסה 7.0 - Ultimate</div>
-            <h1>מתמחים טופ AI</h1>
-            <p>הגעתם לאשכול של 15 עמודים ואין לכם זמן לקרוא הכל? הסקריפט הזה מסכם עבורכם כל דיון בפורום לשורות התחתונות בלחיצת כפתור, ומשתלב בצורה חלקה וטבעית באתר.</p>
-            
-            <a href="https://github.com/szs-770/Topic-summary-mitmachim-top/raw/refs/heads/main/mitmachim-ai.user.js" class="btn-glow">
-                <i class="fa-solid fa-cloud-arrow-down"></i> התקן את הסקריפט
-            </a>
-            <div style="margin-top: 15px; font-size: 0.95rem; color: var(--text-muted);">דורש תוסף Tampermonkey מותקן בדפדפן</div>
-        </header>
-
-        <div class="demo-container" data-aos="zoom-in" data-aos-delay="100">
-            <img src="demo.gif" alt="הדגמת הסקריפט בפעולה בפורום מתמחים טופ">
+    <nav>
+        <div class="container nav-container">
+            <div class="logo">מתמחים טופ <span class="gradient-text">AI</span></div>
+            <button class="theme-toggle" id="themeToggle" aria-label="החלף מצב תצוגה">
+                <i class="ph ph-sun" id="themeIcon"></i>
+            </button>
         </div>
+    </nav>
 
-        <section class="glass-card" data-aos="fade-up">
-            <h2 class="card-title"><i class="fa-solid fa-layer-group"></i> מה הסקריפט יודע לעשות?</h2>
+    <main>
+        <section class="container hero">
+            <div class="hero-content fade-in-up">
+                <div class="badge">גרסה 7.0 Ultimate</div>
+                <h1>סיכום אשכולות בלחיצת כפתור. <span class="gradient-text">זה עד כדי כך פשוט.</span></h1>
+                <p>לקרוא אשכולות ארוכים זה נחלת העבר. סכמו דיונים שלמים והבינו את הנקודות המרכזיות בשניות, בלי לאבד הקשר ובלי לבזבז זמן.</p>
+                <a href="https://github.com/szs-770/Topic-summary-mitmachim-top/raw/refs/heads/main/mitmachim-ai.user.js" class="btn-primary">התקן עכשיו בחינם</a>
+            </div>
+            <div class="hero-visual fade-in-up" style="transition-delay: 0.2s;">
+                <img src="demo.gif" alt="הדגמת פעולת הסקריפט מתמחים טופ AI">
+            </div>
+        </section>
+
+        <section id="features" class="container">
+            <h2 class="fade-in-up">כל מה שצריך כדי לייעל את הקריאה</h2>
             <div class="features-grid">
-                
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="feature-card fade-in-up">
+                    <i class="ph ph-lightning feature-icon"></i>
                     <h3>סיכום חכם ומהיר</h3>
-                    <p>קורא את כל התגובות באשכול מאחורי הקלעים ומפיק סיכום מסודר של הנקודות המרכזיות, ההסכמות, והמסקנה הסופית בעזרת מודל Gemini.</p>
+                    <p>המערכת קוראת את כל התגובות באשכול ומפיקה תקציר מדויק של הנקודות, המסקנות וההסכמות המרכזיות מתוך הדיון.</p>
+                </div>
+                
+                <div class="feature-card fade-in-up" style="transition-delay: 0.1s;">
+                    <i class="ph ph-chats feature-icon"></i>
+                    <h3>צ'אט חי מול הדיון</h3>
+                    <p>משהו בסיכום לא היה ברור? דברו עם הבינה המלאכותית בחלונית צ'אט שמכירה את כל ההקשר של האשכול ויודעת לענות על שאלות מתוכו.</p>
                 </div>
 
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fa-regular fa-comments"></i></div>
-                    <h3>צ'אט חי עם הדיון</h3>
-                    <p>משהו בסיכום לא היה ברור? בתחתית החלונית מחכה לכם תיבת צ'אט. שאלו שאלה, וה-AI יענה לכם מיד על סמך המידע שנכתב באשכול.</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="feature-card fade-in-up" style="transition-delay: 0.2s;">
+                    <i class="ph ph-clock-counter-clockwise feature-icon"></i>
                     <h3>מערכת זיכרון חכמה</h3>
-                    <p>הסקריפט שומר אוטומטית את 20 הדיונים האחרונים שסיכמתם. בנוסף, אם תסכמו את אותו אשכול פעמיים, תוכלו לדפדף בקלות בין הגרסאות השונות.</p>
+                    <p>הסקריפט שומר אוטומטית את 20 הדיונים האחרונים שסוכמו, כולל אפשרות נוחה לדפדף בין גרסאות שונות של אותו סיכום.</p>
                 </div>
 
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fa-solid fa-share-from-square"></i></div>
+                <div class="feature-card fade-in-up">
+                    <i class="ph ph-paper-plane-tilt feature-icon"></i>
                     <h3>פרסום לקהילה בקליק</h3>
-                    <p>אהבתם את הסיכום ורוצים לשתף? כפתור "פרסם" פותח את תיבת התגובה הרשמית של הפורום ושותל בתוכה את הסיכום מוכן לשליחה.</p>
+                    <p>אהבתם את הסיכום? לחיצה אחת תשתול אותו ישירות בתיבת התגובה של הפורום לפרסום ושיתוף מהיר עם שאר המשתמשים.</p>
                 </div>
 
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fa-solid fa-eye-slash"></i></div>
+                <div class="feature-card fade-in-up" style="transition-delay: 0.1s;">
+                    <i class="ph ph-bell-simple-z feature-icon"></i>
                     <h3>עבודה שקטה ברקע</h3>
-                    <p>במקום לחסום לכם את המסך בזמן שהסיכום נוצר, תופיע התראה קטנה בצד שמאפשרת לכם להמשיך לגלול ולקרוא את הפורום באין מפריע.</p>
+                    <p>בזמן שהמערכת מעבדת את המידע, תקבלו התראות קופצות קטנות שלא יפריעו לכם להמשיך לגלוש ולדפדף בפורום באין מפריע.</p>
                 </div>
 
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fa-solid fa-sliders"></i></div>
-                    <h3>שליטה מלאה</h3>
-                    <p>רוצים שהסיכום יהיה קצר יותר? מפורט יותר? הסקריפט כולל עורך הנחיות מתקדם המאפשר לכם להגיד ל-AI בדיוק איך אתם רוצים את הפלט שלכם.</p>
-                </div>
-
-            </div>
-        </section>
-
-        <section class="glass-card" data-aos="fade-up">
-            <h2 class="card-title"><i class="fa-solid fa-star"></i> חידושים בגרסה 7.0</h2>
-            <ul class="styled-list">
-                <li><strong>תמיכה מושלמת במצב לילה:</strong> הממשק (כולל בועות הצ'אט) הופך לכהה אוטומטית בהתאם לערכת הנושא שלכם בפורום כדי למנוע סנוור.</li>
-                <li><strong>כפתור מרחף חכם:</strong> כשגוללים עמוק לתוך האשכול, כפתור הסיכום יופיע גם למטה – אבל רק כשהכפתור העליון נעלם מהעין, כדי לשמור על עיצוב נקי.</li>
-                <li><strong>שקיפות מלאה:</strong> הוספנו חיווי שמציג בדיוק כמה תגובות קראה המערכת מתוך סך התגובות באשכול.</li>
-                <li>עיצוב מחדש של שורת הכפתורים למראה אלגנטי יותר, והתאמת תצוגה מיוחדת למסכים קטנים.</li>
-            </ul>
-        </section>
-
-        <section class="glass-card" data-aos="fade-up">
-            <h2 class="card-title"><i class="fa-solid fa-laptop-code"></i> איך מתקינים?</h2>
-            
-            <div class="step-item">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h4>התקנת התוסף</h4>
-                    <p>ודאו שמותקן לכם התוסף <a href="https://www.tampermonkey.net/" target="_blank">Tampermonkey</a> בדפדפן. לאחר מכן, לחצו על כפתור ההתקנה הגדול בראש עמוד זה ואשרו.</p>
-                </div>
-            </div>
-
-            <div class="step-item">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h4>הוצאת מפתח (חינם)</h4>
-                    <p>היכנסו ל-<a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>. בתפריט הצדדי לחצו על <strong>Get API key</strong>, צרו מפתח חדש והעתיקו אותו.</p>
-                </div>
-            </div>
-
-            <div class="step-item">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h4>זהו, הכל מוכן!</h4>
-                    <p>היכנסו לכל דיון בפורום "מתמחים טופ". לחצו על הכפתור החדש שנוסף בסרגל הכלים, הדביקו את המפתח בפעם הראשונה (הוא נשמר מאובטח אצלכם), ותתחילו לסכם.</p>
+                <div class="feature-card fade-in-up" style="transition-delay: 0.2s;">
+                    <i class="ph ph-faders feature-icon"></i>
+                    <h3>שליטה מלאה (Prompt)</h3>
+                    <p>אתם קובעים את החוקים. עורך הנחיות מתקדם מאפשר לכם לשלוט באורך, בסגנון ובדגשים הספציפיים שתרצו לראות בסיכום.</p>
                 </div>
             </div>
         </section>
 
-    </div>
+        <section id="whats-new" class="whats-new">
+            <div class="container">
+                <h2 class="fade-in-up">מה חדש בגרסת <span class="gradient-text">7.0</span>?</h2>
+                <div class="whats-new-list">
+                    <div class="whats-new-item fade-in-up">
+                        <i class="ph ph-moon-stars whats-new-icon"></i>
+                        <div>
+                            <h3>מצב לילה מושלם</h3>
+                            <p>תמיכה מלאה ואינטגרטיבית במצב לילה, המסנכרנת אוטומטית עם עיצוב הפורום המקורי.</p>
+                        </div>
+                    </div>
+                    <div class="whats-new-item fade-in-up" style="transition-delay: 0.1s;">
+                        <i class="ph ph-mouse-scroll whats-new-icon"></i>
+                        <div>
+                            <h3>כפתור רחף חכם</h3>
+                            <p>נוחות מקסימלית: כפתור הסיכום הצף יופיע בדיוק ברגע שהכפתור העליון נגלל מחוץ למסך.</p>
+                        </div>
+                    </div>
+                    <div class="whats-new-item fade-in-up" style="transition-delay: 0.2s;">
+                        <i class="ph ph-eye whats-new-icon"></i>
+                        <div>
+                            <h3>שקיפות מלאה</h3>
+                            <p>חיווי מדויק המציג בכל רגע נתון כמה תגובות מתוך האשכול המערכת כבר קראה ועיבדה.</p>
+                        </div>
+                    </div>
+                    <div class="whats-new-item fade-in-up" style="transition-delay: 0.3s;">
+                        <i class="ph ph-devices whats-new-icon"></i>
+                        <div>
+                            <h3>התאמה למסכים קטנים</h3>
+                            <p>עיצוב מחדש של שורת הכפתורים כדי להבטיח תצוגה נקייה ונוחה גם בגלישה מהמובייל.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="install" class="container">
+            <h2 class="fade-in-up">3 שלבים פשוטים ואתם מוכנים</h2>
+            <div class="install-steps">
+                <div class="step-card fade-in-up">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3>התקנת Tampermonkey</h3>
+                        <p>הורידו והתקינו את תוסף מנהל הסקריפטים <a href="https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?pli=1" target="_blank" class="text-link">Tampermonkey</a> מחנות התוספים של הדפדפן שלכם.</p>
+                    </div>
+                </div>
+                <div class="step-card fade-in-up" style="transition-delay: 0.1s;">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3>קבלת מפתח API</h3>
+                        <p>היכנסו לאתר <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-link">Google AI Studio</a> והנפיקו מפתח חינמי ואישי (API Key) בצורה מאובטחת.</p>
+                    </div>
+                </div>
+                <div class="step-card fade-in-up" style="transition-delay: 0.2s;">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3>הפעלה בפורום</h3>
+                        <p>היכנסו לפורום מתמחים טופ. בחלון שיקפוץ, הדביקו את המפתח שלכם והתחילו לסכם אשכולות!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <footer>
-        <p>סקריפט זה פותח באופן עצמאי לרווחת קהילת מתמחים טופ 💎<br>מופעל באמצעות Gemini Flash Lite</p>
+        <div class="container fade-in-up">
+            <div class="footer-logo">מתמחים טופ <i class="ph-fill ph-sparkle gradient-text"></i> AI</div>
+            <p>פותח באהבה עבור קהילת מתמחים טופ.<br>מופעל באמצעות מודל <span class="footer-tech">gemini-flash-lite-latest</span>.</p>
+        </div>
     </footer>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({ duration: 800, once: true, offset: 50 });
+        // --- Theme Toggle Logic ---
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
 
-        const themeToggle = document.getElementById('themeToggle');
-        const body = document.body;
-        const icon = themeToggle.querySelector('i');
-
-        const savedTheme = localStorage.getItem('site-theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        if (savedTheme) {
-            setTheme(savedTheme);
-        } else if (prefersDark) {
-            setTheme('dark');
-        }
-
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = body.getAttribute('data-theme');
-            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            
+            // Update Icon
+            if(newTheme === 'light') {
+                themeIcon.classList.remove('ph-sun');
+                themeIcon.classList.add('ph-moon');
+            } else {
+                themeIcon.classList.remove('ph-moon');
+                themeIcon.classList.add('ph-sun');
+            }
         });
 
-        function setTheme(theme) {
-            body.setAttribute('data-theme', theme);
-            localStorage.setItem('site-theme', theme);
-            icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-        }
+        // --- Scroll Animations (Intersection Observer) ---
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // Animate only once
+                }
+            });
+        }, observerOptions);
+
+        // Observe all elements with the animation class
+        document.querySelectorAll('.fade-in-up').forEach((elem) => {
+            observer.observe(elem);
+        });
     </script>
 </body>
 </html>
