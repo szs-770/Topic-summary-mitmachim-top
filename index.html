@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mitmachim Top - AI Summarizer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap');
+        
+        :root {
+            --primary: #0d6efd;
+            --success: #198754;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #546e7a;
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero {
+            text-align: center;
+            background: var(--card-bg);
+            padding: 50px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 35px;
+        }
+
+        .btn-install {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            padding: 18px 40px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.4);
+        }
+
+        .btn-install:hover {
+            background: #146c43;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(25, 135, 84, 0.6);
+            color: white;
+        }
+
+        .btn-install i {
+            margin-left: 8px;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            margin-bottom: 30px;
+        }
+
+        .section-card h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #eef2f5;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            position: relative;
+            padding-right: 35px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .feature-list li::before {
+            content: '\f058'; /* FontAwesome check-circle */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--primary);
+            position: absolute;
+            right: 0;
+            top: 2px;
+            font-size: 1.3rem;
+        }
+
+        .changelog {
+            background: #fff3cd;
+            border-right: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .step-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .step-box h4 {
+            margin-top: 0;
+            color: var(--text);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 1.1rem; }
+            .btn-install { padding: 15px 30px; font-size: 1.2rem; }
+            .section-card { padding: 25px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="hero">
+            <h1><i class="fa-solid fa-robot"></i> מתמחים טופ AI</h1>
+            <p>הסקריפט האולטימטיבי לסיכום אשכולות ארוכים באמצעות בינה מלאכותית (Gemini Flash). מהיר, חכם ומשתלב בשלמות בעיצוב הפורום.</p>
+            
+            <a href="https://github.com/szs-770/mitmachim-summarizer/raw/refs/heads/main/mitmachim-ai.user.js" class="btn-install">
+                <i class="fa-solid fa-download"></i> התקן עכשיו (גרסה 9.1)
+            </a>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: #777;">דורש תוסף Tampermonkey מותקן בדפדפן</div>
+        </div>
+
+        <div class="changelog">
+            <h3 style="margin-top: 0; color: #856404;"><i class="fa-solid fa-bolt"></i> מה חדש בגרסה 9.1?</h3>
+            <ul style="margin: 0; padding-right: 20px; color: #856404;">
+                <li><strong>שאלות ותשובות (Chat):</strong> אפשרות לשאול את ה-AI שאלות על בסיס הדיון בחלון הסיכום.</li>
+                <li><strong>היסטוריית גרסאות מתקדמת:</strong> דפדוף אחורה וקדימה בין סיכומים שונים שעשיתם לאותו אשכול.</li>
+                <li><strong>כפתור פרסום:</strong> העברה אוטומטית של הסיכום המלא לחלון התגובות בפורום בלחיצת כפתור.</li>
+                <li><strong>מצב לילה (Dark Mode):</strong> תמיכה מושלמת ודינמית בערכת הנושא השחורה של הפורום.</li>
+                <li><strong>כפתור מרחף:</strong> כפתור סיכום נוסף שמופיע למטה רק כשגוללים, לנוחות מקסימלית.</li>
+                <li>עיצוב מחדש של שורת הכפתורים למראה נקי ומסודר יותר.</li>
+            </ul>
+        </div>
+
+        <div class="section-card">
+            <h2><i class="fa-solid fa-star"></i> תכונות עיקריות</h2>
+            <ul class="feature-list">
+                <li><strong>סיכום מקיף:</strong> קורא את כל עמודי האשכול (ללא הגבלת עמודים) לקבלת תמונה מלאה.</li>
+                <li><strong>ממשק טבעי:</strong> שימוש ברכיבי הממשק המקוריים של NodeBB למראה שמרגיש חלק מהאתר.</li>
+                <li><strong>התאמת הנחיה:</strong> אפשרות לערוך את ה-Prompt כדי לקבל סיכומים בדיוק בסגנון שלכם.</li>
+                <li><strong>גלילה חופשית:</strong> סיכום ברקע שאינו חוסם את המסך עד שהוא מוכן.</li>
+                <li><strong>היסטוריה גלובלית:</strong> גישה מהירה ל-20 האשכולות האחרונים שסיכמתם.</li>
+            </ul>
+        </div>
+
+        <div class="section-card">
+            <h2><i class="fa-solid fa-wrench"></i> איך מתחילים?</h2>
+            
+            <div class="step-box">
+                <h4>שלב 1: התקנת הסקריפט</h4>
+                <p>ודאו שיש לכם את תוסף <strong>Tampermonkey</strong> בדפדפן. לאחר מכן, לחצו על כפתור ההתקנה הירוק בראש עמוד זה ואשרו את ההתקנה בחלונית שתקפוץ.</p>
+            </div>
+
+            <div class="step-box">
+                <h4>שלב 2: הוצאת מפתח API (בחינם)</h4>
+                <p>הסקריפט משתמש במודל המתקדם של גוגל. כדי להפעיל אותו, יש להוציא מפתח אישי:</p>
+                <ol style="padding-right: 20px;">
+                    <li>היכנסו לאתר <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</li>
+                    <li>לחצו על <strong>Get API key</strong> בתפריט הצדדי.</li>
+                    <li>לחצו על <strong>Create API key</strong> והעתיקו את רצף האותיות והמספרים.</li>
+                </ol>
+            </div>
+
+            <div class="step-box">
+                <h4>שלב 3: הפעלה בפורום</h4>
+                <p>היכנסו לאשכול כלשהו בפורום "מתמחים טופ". לחצו על כפתור "סכם נושא" החדש שיופיע בסרגל הכלים. בפעם הראשונה בלבד, המערכת תבקש מכם להדביק את מפתח ה-API שהעתקתם (הוא נשמר מקומית ובטוח בדפדפן שלכם).</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            פותח לטובת הקהילה 💎
+        </div>
+    </div>
+
+</body>
+</html>
