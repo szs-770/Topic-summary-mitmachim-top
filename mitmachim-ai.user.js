@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         Mitmachim Top Topic Summarizer - Ultimate Edition
-// @namespace    http://mitmachim.top/*
-// @version      7.0
-// @description  AI topic summarizer: UI Polish, Chat, Versions, Dark Mode, Smart Sticky Button, Auto-Reply & Read Length
+// @name         Mitmachim & Otzaria Topic Summarizer - Universal Edition
+// @namespace    https://github.com/
+// @version      8.0
+// @description  AI topic summarizer for both Mitmachim Top and Otzaria Forum (NodeBB based) with dynamic routing, UI Polish, Chat, and History.
 // @match        https://mitmachim.top/*
+// @match        https://otzaria.org/forum/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -13,6 +14,9 @@
 
 (function() {
     'use strict';
+
+    // זיהוי הפורום הנוכחי לצורך ניתוח דינמי
+    const isOtzaria = window.location.hostname.includes('otzaria.org');
 
     // ==========================================
     // הגדרת הנחיית ברירת המחדל (Default Prompt)
@@ -114,6 +118,11 @@
         return match ? match[1] : null;
     }
 
+    // מקבל את בסיס ה-API הנכון לפי הדומיין הנוכחי
+    function getApiUrlBase() {
+        return isOtzaria ? (window.location.origin + '/forum/api/topic/') : (window.location.origin + '/api/topic/');
+    }
+
     // ==========================================
     // מנגנון Toast עדין (לא חוסם מסך)
     // ==========================================
@@ -138,7 +147,7 @@
     // ==========================================
     function saveSummaryToHistory(tid, summaryText) {
         const titleEl = document.querySelector('span[component="topic/title"]') || document.querySelector('title');
-        let title = titleEl ? titleEl.textContent.replace(' | מתמחים טופ', '').trim() : 'דיון ללא כותרת';
+        let title = titleEl ? titleEl.textContent.replace(' | מתמחים טופ', '').replace(' | פורום אוצר החכמה', '').replace(' | אוצרייתא', '').trim() : 'דיון ללא כותרת';
 
         let history = JSON.parse(GM_getValue('ai_summary_history_v1', '[]'));
         history = history.filter(h => h.tid !== tid);
@@ -188,9 +197,10 @@
         let threadText = '';
         let fetchedPostsCount = 0;
         let totalPostsCount = 0;
+        const apiBase = getApiUrlBase();
 
         try {
-            const res = await fetch(window.location.origin + `/api/topic/${tid}`);
+            const res = await fetch(apiBase + tid);
             const data = await res.json();
 
             totalPostsCount = data.postcount || 0;
@@ -198,9 +208,11 @@
             const pageCount = data.pagination ? data.pagination.pageCount : 1;
 
             for (let p = 2; p <= pageCount; p++) {
-                const pageRes = await fetch(window.location.origin + `/api/topic/${tid}?page=${p}`);
-                const pageData = await pageRes.json();
-                if (pageData.posts) allPosts = allPosts.concat(pageData.posts);
+                try {
+                    const pageRes = await fetch(apiBase + `${tid}?page=${p}`);
+                    const pageData = await pageRes.json();
+                    if (pageData.posts) allPosts = allPosts.concat(pageData.posts);
+                } catch (err) { console.error(err); }
             }
 
             allPosts.forEach((post, index) => {
@@ -356,7 +368,7 @@ ${threadText}`;
                     className: 'btn-success text-white',
                     callback: function() {
                         const textToPublish = dialog.data('rawSummary');
-                        const replyBtn = document.querySelector('[component="topic/reply"]');
+                        const replyBtn = document.querySelector('[component="topic/reply"]') || document.querySelector('.composer-reply, .btn-reply');
                         if (replyBtn) {
                             bootbox.hideAll();
                             replyBtn.click();
@@ -573,7 +585,7 @@ ${threadText}`;
     // הזרקת כפתורים (עליון חכם ותחתון בהשגחה)
     // ==========================================
     function injectInlineButton() {
-        const toolbars = document.querySelectorAll('.topic-main-buttons > div > div:first-child');
+        const toolbars = document.querySelectorAll('.topic-main-buttons > div > div:first-child, .topic .action-bar .d-flex');
 
         toolbars.forEach((toolbar, index) => {
             const isTop = index === 0;
