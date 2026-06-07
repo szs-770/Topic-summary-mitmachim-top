@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mitmachim & Otzaria Topic Summarizer - Universal Edition
 // @namespace    https://github.com/
-// @version      8.0
+// @version      8.1
 // @description  AI topic summarizer for both Mitmachim Top and Otzaria Forum (NodeBB based) with dynamic routing, UI Polish, Chat, and History.
 // @match        https://mitmachim.top/*
 // @match        https://otzaria.org/forum/*
