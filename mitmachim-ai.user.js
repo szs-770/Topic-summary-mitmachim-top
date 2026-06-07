@@ -5,6 +5,7 @@
 // @description  AI topic summarizer for both Mitmachim Top and Otzaria Forum (NodeBB based) with dynamic routing, UI Polish, Chat, and History.
 // @match        https://mitmachim.top/*
 // @match        https://otzaria.org/forum/*
+// @match        https://bnebrak.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -15,8 +16,11 @@
 (function() {
     'use strict';
 
-    // זיהוי הפורום הנוכחי לצורך ניתוח דינמי
-    const isOtzaria = window.location.hostname.includes('otzaria.org');
+    const hostname = window.location.hostname;
+
+const isMitmachim = hostname.includes('mitmachim.top');
+const isOtzaria = hostname.includes('otzaria.org');
+const isBneiBrak = hostname.includes('bnebrak.com');
 
     // ==========================================
     // הגדרת הנחיית ברירת המחדל (Default Prompt)
